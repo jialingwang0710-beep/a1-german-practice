@@ -97,6 +97,130 @@ if (Array.isArray(window.A1_REDEMITTEL_ITEMS)) {
   const knownGerman = new Set(items.map(item => item.de));
   items.push(...window.A1_REDEMITTEL_ITEMS.filter(item => !knownGerman.has(item.de)));
 }
+const splitEntries = {
+  'Berlin · Wien · – Zürich': [['Berlin','柏林'],['Wien','维也纳'],['Zürich','苏黎世']],
+  'der Arzt / die Ärztin': [['der Arzt','男医生'],['die Ärztin','女医生']],
+  'der Architekt / -in': [['der Architekt','男建筑师'],['die Architektin','女建筑师']],
+  'der Koch / die Köchin': [['der Koch','男厨师'],['die Köchin','女厨师']],
+  'der Lehrer / die Lehrerin': [['der Lehrer','男教师'],['die Lehrerin','女教师']],
+  'der Ingenieur / -in': [['der Ingenieur','男工程师'],['die Ingenieurin','女工程师']],
+  'der Informatiker / -in': [['der Informatiker','男信息技术人员'],['die Informatikerin','女信息技术人员']],
+  'der Student / die Studentin': [['der Student','男大学生'],['die Studentin','女大学生']],
+  'der Kellner / die Kellnerin': [['der Kellner','男服务员'],['die Kellnerin','女服务员']],
+  'der Mechaniker / -in': [['der Mechaniker','男机械师'],['die Mechanikerin','女机械师']],
+  'der Polizist / -in': [['der Polizist','男警察'],['die Polizistin','女警察']],
+  'der Maler / die Malerin': [['der Maler','男画家；油漆工'],['die Malerin','女画家；油漆工']],
+  'der Kaufmann / die Kauffrau': [['der Kaufmann','男商人'],['die Kauffrau','女商人']],
+  'der Journalist / -in': [['der Journalist','男记者'],['die Journalistin','女记者']],
+  'der Großvater / die Großmutter': [['der Großvater','祖父；外祖父'],['die Großmutter','祖母；外祖母']],
+  'gut – schlecht / – schlimm': [['gut','好的'],['schlecht','坏的'],['schlimm','糟糕的；坏的']],
+  'schön – hässlich': [['schön','漂亮的'],['hässlich','难看的']],
+  'modern – altmodisch': [['modern','现代的'],['altmodisch','过时的']],
+  'interessant – – langweilig': [['interessant','有趣的'],['langweilig','无聊的']],
+  'praktisch – – unpraktisch': [['praktisch','实用的'],['unpraktisch','不实用的']],
+  'toll / super / prima': [['toll','棒极了'],['super','超级好'],['prima','好极了']],
+  'nett / sympathisch': [['nett','好心的；友好的'],['sympathisch','和蔼的；令人喜欢的']],
+  'ruhig / laut': [['ruhig','安静的'],['laut','吵闹的']],
+  'einfach / schwierig / – kompliziert': [['einfach','简单的'],['schwierig','困难的'],['kompliziert','复杂的']],
+  'richtig / falsch': [['richtig','正确的'],['falsch','错误的']],
+  'bekannt / unbekannt': [['bekannt','知名的'],['unbekannt','不知名的']],
+  'zufrieden / – unzufrieden': [['zufrieden','满意的'],['unzufrieden','不满意的']]
+  ,'neu – alt': [['neu','新的'],['alt','旧的；老的']]
+  ,'groß – klein': [['groß','大的'],['klein','小的']]
+  ,'billig – teuer': [['billig','便宜的'],['teuer','贵的']]
+  ,'ledig / verheiratet': [['ledig','单身的'],['verheiratet','已婚的']]
+  ,'heute / morgen / – gestern': [['heute','今天'],['morgen','明天'],['gestern','昨天']]
+  ,'übermorgen / – vorgestern': [['übermorgen','后天'],['vorgestern','前天']]
+  ,'wöchentlich /': [['täglich','每天'],['wöchentlich','每周'],['monatlich','每月']]
+  ,'bald / gleich / sofort': [['bald','不久'],['gleich','立刻；马上'],['sofort','立刻；马上']]
+  ,'früh / spät / – pünktlich': [['früh','早'],['spät','晚'],['pünktlich','准时']]
+  ,'die Sonne / sonnig': [['die Sonne','太阳'],['sonnig','晴朗的']]
+  ,'der Regen / regnerisch': [['der Regen','雨'],['regnerisch','下雨的']]
+  ,'der Wind / windig': [['der Wind','风'],['windig','有风的']]
+  ,'der Schnee / schneeig': [['der Schnee','雪'],['schneeig','下雪的']]
+  ,'die Wolke / bewölkt': [['die Wolke','云'],['bewölkt','多云的']]
+  ,'der Nebel / neblig': [['der Nebel','雾'],['neblig','有雾的']]
+  ,'die Hitze / heiß': [['die Hitze','酷热'],['heiß','热的']]
+  ,'die Kälte / kalt': [['die Kälte','寒冷'],['kalt','冷的']]
+  ,'der Frost / frostig': [['der Frost','霜冻'],['frostig','结霜的']]
+  ,'die Abfahrt / Ankunft': [['die Abfahrt','出发'],['die Ankunft','到达']]
+  ,'liegen / Zustand': [['liegen','平躺'],['stehen','竖立'],['hängen','悬挂；挂上']]
+  ,'stellen / Aktion legen / hängen': [['stellen','放竖'],['legen','放平'],['hängen','悬挂；挂上']]
+  ,'wohnen / ich wohne / miete mieten': [['wohnen','居住'],['mieten','租用']]
+  ,'wir wohn en ich wohne': [['wohnen','居住']]
+  ,'ihr wohn t du wohnst': [['wohnen','居住']]
+  ,'er/sie/es sie/Sie wohn en wohnt': [['wohnen','居住']]
+  ,'haben sein': [['sein','是'],['haben','有；拥有'],['werden','成为']]
+  ,'fährt fahren': [['fahren','乘坐；驾驶']]
+  ,'schläft schlafen': [['schlafen','睡觉']]
+  ,'läuft laufen': [['laufen','跑；走路']]
+  ,'sich erinnern ich erinnere mich an an': [['sich erinnern','记得；想起']]
+  ,'lang – kurz': [['lang','长的'],['kurz','短的']]
+  ,'hoch – niedrig': [['hoch','高的'],['niedrig','低的']]
+  ,'alt – jung': [['alt','老的'],['jung','年轻的']]
+  ,'alt – neu': [['alt','旧的'],['neu','新的']]
+  ,'teuer – billig / – günstig': [['teuer','贵的'],['billig','便宜的'],['günstig','便宜的；划算的']]
+  ,'kalt – warm – heiß': [['kalt','冷的'],['warm','暖和的'],['heiß','热的']]
+  ,'hell – dunkel': [['hell','亮的'],['dunkel','暗的']]
+  ,'laut – leise / ruhig': [['laut','吵闹的'],['leise','轻声的；安静的'],['ruhig','安静的']]
+  ,'schnell – langsam': [['schnell','快的'],['langsam','慢的']]
+  ,'schwer – leicht': [['schwer','重的；难的'],['leicht','轻的；容易的']]
+  ,'freundlich – – unfreundlich': [['freundlich','友好的'],['unfreundlich','不友好的']]
+  ,'müde / krank / – gesund': [['müde','疲倦的'],['krank','生病的'],['gesund','健康的']]
+  ,'frei – besetzt': [['frei','空闲的'],['besetzt','占用的；忙的']]
+  ,'sauber – schmutzig': [['sauber','干净的'],['schmutzig','脏的']]
+  ,'voll – leer': [['voll','满的'],['leer','空的']]
+  ,'offen / geschlossen': [['offen','开着的'],['geschlossen','关着的']]
+  ,'sehr / zu / so': [['sehr','非常'],['zu','太'],['so','如此']]
+  ,'auch / nur / noch': [['auch','也'],['nur','只'],['noch','还']]
+  ,'schon / noch nicht': [['schon','已经'],['noch nicht','还没']]
+  ,'gern / lieber / am – liebsten': [['gern','乐意'],['lieber','更喜欢'],['am liebsten','最喜欢']]
+  ,'oft / manchmal / – selten': [['oft','经常'],['manchmal','有时'],['selten','很少']]
+  ,'immer / nie / fast – nie': [['immer','总是'],['nie','从不'],['fast nie','几乎不']]
+  ,'vielleicht / – wahrscheinlich': [['vielleicht','也许'],['wahrscheinlich','可能']]
+  ,'zusammen / allein / – getrennt': [['zusammen','一起'],['allein','独自'],['getrennt','分开']]
+  ,'trotzdem / – deswegen': [['trotzdem','尽管如此'],['deswegen','因此']]
+  ,'werktags / am – Wochenende': [['werktags','工作日'],['am Wochenende','在周末']]
+  ,'sich freuen ich freue mich auf': [['sich freuen','期待；为……高兴']]
+  ,'trägt tragen': [['tragen','携带；穿（衣）']]
+  ,'isst essen': [['essen','吃']]
+  ,'gibt geben': [['geben','给']]
+  ,'nimmt': [['nehmen','拿；取']]
+  ,'spricht sprechen': [['sprechen','说话']]
+  ,'trifft treffen': [['treffen','遇见']]
+  ,'liest lesen': [['lesen','阅读']]
+  ,'sieht sehen': [['sehen','看']]
+  ,'empfiehlt empfehlen': [['empfehlen','推荐']]
+  ,'das schmeckt schmecken gut': [['Das schmeckt gut.','味道好；好吃']]
+  ,'住 wohnen': [['wohnen','住']]
+};
+const alternativeAnswers = {
+  'der Familienname': ['der Familienname','der Nachname'],
+  'der Pullover / Pulli': ['der Pullover','der Pulli'],
+  'der Zug / die Bahn': ['der Zug','die Bahn'],
+  'der Stock / die Etage': ['der Stock','die Etage'],
+  'der Fahrstuhl / Aufzug': ['der Fahrstuhl','der Aufzug'],
+  'das Badezimmer / Bad': ['das Badezimmer','das Bad'],
+  'zahlen / ich zahle / bezahle bezahlen': ['zahlen','ich zahle','ich bezahle','bezahlen']
+};
+const separableVerbs = ['aufstehen','aufwachen','anfangen','anrufen','einkaufen','fernsehen','einschlafen','aufräumen','ausgehen','abholen','umsteigen','ankommen','abfahren','mitnehmen','einpacken','umziehen','einrichten'];
+const rewrittenItems = [];
+for (const item of items) {
+  if (splitEntries[item.de]) { rewrittenItems.push(...splitEntries[item.de].map(([de,zh]) => ({...item,de,zh,k:'word'}))); continue; }
+  const verb = separableVerbs.find(candidate => item.de.includes(candidate));
+  if (verb) { rewrittenItems.push({...item,de:verb,k:'word'}); continue; }
+  const answers = alternativeAnswers[item.de] || (item.de.startsWith('zahlen /') ? alternativeAnswers['zahlen / ich zahle / bezahle bezahlen'] : null);
+  rewrittenItems.push(answers ? {...item,de:answers[0],answers,k:'word'} : item);
+}
+const consolidatedItems = new Map();
+for (const item of rewrittenItems) {
+  const previous = consolidatedItems.get(item.de);
+  if (!previous) { consolidatedItems.set(item.de,item); continue; }
+  const mergedAnswers = [...new Set([...(previous.answers || [previous.de]),...(item.answers || [item.de])])];
+  consolidatedItems.set(item.de,mergedAnswers.length > 1 ? {...previous,answers:mergedAnswers} : previous);
+}
+if (consolidatedItems.has('wohnen')) consolidatedItems.set('wohnen',{...consolidatedItems.get('wohnen'),zh:'住'});
+items.splice(0,items.length,...consolidatedItems.values());
 
 const $ = s => document.querySelector(s);
 const chapter = $('#chapter'), kind = $('#kind'), answer = $('#answer'), feedback = $('#feedback');
@@ -104,12 +228,14 @@ const ERROR_STORAGE_KEY = 'a1-vocabulary-error-book-v1';
 const loadErrors = () => { try { return JSON.parse(localStorage.getItem(ERROR_STORAGE_KEY)) || {}; } catch { return {}; } };
 let errors = loadErrors(), round = [], index = 0, correctIndices = new Set(), checked = false, errorMode = false;
 const normalize = text => text.toLocaleLowerCase('de-DE').replace(/…|\.\.\./g,' ').replace(/[„“”"'.,!?؛;:()[\]{}–—-]/g,' ').replace(/\s+/g,' ').trim();
+const answersFor = item => item.answers || [item.de];
+const errorKey = item => answersFor(item).join(' | ');
 const saveErrors = () => localStorage.setItem(ERROR_STORAGE_KEY, JSON.stringify(errors));
 const errorEntries = () => Object.values(errors);
 function renderErrorBook() {
   const list = errorEntries(); $('#errorToggle').textContent = `错题本（${list.length}）`;
   $('#errorEmpty').textContent = list.length ? `共 ${list.length} 题。答对后会自动从错题本清除。` : '还没有错题，继续保持！';
-  $('#errorList').innerHTML = list.map(x => `<li><b>${x.zh}</b><br><span class="wrong-answer">你的答案：${x.wrong || '（未填写）'}</span><br>标准答案：${x.de}</li>`).join('');
+  $('#errorList').innerHTML = list.map(x => `<li><b>${x.zh}</b><br><span class="wrong-answer">你的答案：${x.wrong || '（未填写）'}</span><br>标准答案：${answersFor(x).join(' / ')}</li>`).join('');
   $('#practiceErrors').disabled = !list.length;
 }
 function choices() { const c = chapter.value, k = kind.value; return items.filter(x => (c === 'all' || x.c === c) && (k === 'all' || x.k === k)); }
@@ -123,12 +249,12 @@ function display() {
   $('#bar').style.width = `${(index / round.length) * 100}%`; $('#previous').disabled = index === 0; answer.focus();
 }
 function resetRound() { errorMode = false; round = shuffle(choices()); index = 0; correctIndices = new Set(); $('#errorBook').classList.remove('show'); display(); }
-function speak() { if (!round.length || !('speechSynthesis' in window)) { alert('此浏览器不支持朗读功能。'); return; } speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(round[index].de.replace('…','')); u.lang = 'de-DE'; u.rate = .82; speechSynthesis.speak(u); }
+function speak() { if (!round.length || !('speechSynthesis' in window)) { alert('此浏览器不支持朗读功能。'); return; } speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(answersFor(round[index])[0].replace('…','')); u.lang = 'de-DE'; u.rate = .82; speechSynthesis.speak(u); }
 function next() { if (index < round.length - 1) { index++; display(); } else { $('#bar').style.width = '100%'; $('#meaning').textContent = `本轮完成！答对 ${correctIndices.size} / ${round.length} 题。`; $('#tag').textContent = '完成'; $('#hint').textContent = '点击“重新随机本轮”再练一次。'; answer.value = ''; answer.disabled = true; $('#check').disabled = true; $('#previous').disabled = true; $('#skip').disabled = true; $('#status').textContent = '练习完成'; }
 }
 function previous() { if (index > 0) { index--; display(); } }
 function practiceErrors() { const list = errorEntries(); if (!list.length) return; errorMode = true; round = shuffle(list); index = 0; correctIndices = new Set(); answer.disabled=false; $('#check').disabled=false; $('#skip').disabled=false; $('#errorBook').classList.remove('show'); display(); }
-function check() { if (!round.length || checked) return; const x = round[index], given = normalize(answer.value), expected = normalize(x.de); if (!given) { feedback.className='no'; feedback.textContent='请先输入答案。'; return; } checked = true; if (given === expected) { correctIndices.add(index); const wasError = Boolean(errors[x.de]); if (wasError) { delete errors[x.de]; saveErrors(); renderErrorBook(); } feedback.className='ok'; feedback.innerHTML=wasError ? '✓ 正确！已从错题本移除。' : '✓ 正确！'; setTimeout(next, 750); } else { errors[x.de] = {...x, wrong: answer.value.trim()}; saveErrors(); renderErrorBook(); feedback.className='no'; feedback.innerHTML=`✗ 还不对，已加入错题本。标准答案：<strong>${x.de}</strong>`; $('#status').textContent = `第 ${index + 1} / ${round.length} 题 · 可查看答案后跳过`; } }
+function check() { if (!round.length || checked) return; const x = round[index], given = normalize(answer.value), expected = answersFor(x).map(normalize); if (!given) { feedback.className='no'; feedback.textContent='请先输入答案。'; return; } checked = true; if (expected.includes(given)) { correctIndices.add(index); const key = errorKey(x), wasError = Boolean(errors[key]); if (wasError) { delete errors[key]; saveErrors(); renderErrorBook(); } feedback.className='ok'; feedback.innerHTML=wasError ? '✓ 正确！已从错题本移除。' : '✓ 正确！'; setTimeout(next, 750); } else { const key = errorKey(x); errors[key] = {...x, wrong: answer.value.trim()}; saveErrors(); renderErrorBook(); feedback.className='no'; feedback.innerHTML=`✗ 还不对，已加入错题本。标准答案：<strong>${answersFor(x).join(' / ')}</strong>`; $('#status').textContent = `第 ${index + 1} / ${round.length} 题 · 可查看答案后跳过`; } }
 function rebuildChapters() { const chapters = [...new Set(items.map(x => x.c))]; chapter.innerHTML = '<option value="all">全部章节</option>' + chapters.map(c => `<option value="${c}">${c}</option>`).join(''); $('#totalCount').textContent = `${items.length} 个词条`; }
 chapter.addEventListener('change', resetRound); kind.addEventListener('change', resetRound); $('#check').addEventListener('click',check); $('#previous').addEventListener('click',previous); $('#skip').addEventListener('click',next); $('#speak').addEventListener('click',speak); $('#errorToggle').addEventListener('click',()=>$('#errorBook').classList.toggle('show')); $('#practiceErrors').addEventListener('click',practiceErrors); $('#restart').addEventListener('click',()=>{ answer.disabled=false; $('#check').disabled=false; $('#skip').disabled=false; resetRound(); }); answer.addEventListener('keydown',e=>{ if(e.key==='Enter') check(); });
 rebuildChapters(); renderErrorBook(); resetRound();
