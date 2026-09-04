@@ -254,7 +254,19 @@ function next() { if (index < round.length - 1) { index++; display(); } else { $
 }
 function previous() { if (index > 0) { index--; display(); } }
 function practiceErrors() { const list = errorEntries(); if (!list.length) return; errorMode = true; round = shuffle(list); index = 0; correctIndices = new Set(); answer.disabled=false; $('#check').disabled=false; $('#skip').disabled=false; $('#errorBook').classList.remove('show'); display(); }
-function check() { if (!round.length || checked) return; const x = round[index], given = normalize(answer.value), expected = answersFor(x).map(normalize); if (!given) { feedback.className='no'; feedback.textContent='请先输入答案。'; return; } checked = true; if (expected.includes(given)) { correctIndices.add(index); const key = errorKey(x), wasError = Boolean(errors[key]); if (wasError) { delete errors[key]; saveErrors(); renderErrorBook(); } feedback.className='ok'; feedback.innerHTML=wasError ? '✓ 正确！已从错题本移除。' : '✓ 正确！'; setTimeout(next, 750); } else { const key = errorKey(x); errors[key] = {...x, wrong: answer.value.trim()}; saveErrors(); renderErrorBook(); feedback.className='no'; feedback.innerHTML=`✗ 还不对，已加入错题本。标准答案：<strong>${answersFor(x).join(' / ')}</strong>`; $('#status').textContent = `第 ${index + 1} / ${round.length} 题 · 可查看答案后跳过`; } }
+function playFeedbackSound(isCorrect) {
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+  try {
+    const audio = new AudioCtx(), oscillator = audio.createOscillator(), gain = audio.createGain(), now = audio.currentTime;
+    oscillator.type = isCorrect ? 'sine' : 'triangle';
+    oscillator.frequency.setValueAtTime(isCorrect ? 660 : 190, now);
+    oscillator.frequency.linearRampToValueAtTime(isCorrect ? 880 : 135, now + (isCorrect ? .12 : .2));
+    gain.gain.setValueAtTime(.0001, now); gain.gain.exponentialRampToValueAtTime(.12, now + .02); gain.gain.exponentialRampToValueAtTime(.0001, now + .26);
+    oscillator.connect(gain); gain.connect(audio.destination); oscillator.start(now); oscillator.stop(now + .28); oscillator.onended = () => audio.close();
+  } catch { /* 音效不可用时不影响答题。 */ }
+}
+function check() { if (!round.length || checked) return; const x = round[index], given = normalize(answer.value), expected = answersFor(x).map(normalize); if (!given) { feedback.className='no'; feedback.textContent='请先输入答案。'; return; } checked = true; if (expected.includes(given)) { correctIndices.add(index); const key = errorKey(x), wasError = Boolean(errors[key]); if (wasError) { delete errors[key]; saveErrors(); renderErrorBook(); } playFeedbackSound(true); feedback.className='ok'; feedback.innerHTML=wasError ? '✓ 正确！已从错题本移除。' : '✓ 正确！'; setTimeout(next, 750); } else { const key = errorKey(x); errors[key] = {...x, wrong: answer.value.trim()}; saveErrors(); renderErrorBook(); playFeedbackSound(false); feedback.className='no'; feedback.innerHTML=`✗ 还不对，已加入错题本。标准答案：<strong>${answersFor(x).join(' / ')}</strong>`; $('#status').textContent = `第 ${index + 1} / ${round.length} 题 · 可查看答案后跳过`; } }
 function rebuildChapters() { const chapters = [...new Set(items.map(x => x.c))]; chapter.innerHTML = '<option value="all">全部章节</option>' + chapters.map(c => `<option value="${c}">${c}</option>`).join(''); $('#totalCount').textContent = `${items.length} 个词条`; }
 chapter.addEventListener('change', resetRound); kind.addEventListener('change', resetRound); $('#check').addEventListener('click',check); $('#previous').addEventListener('click',previous); $('#skip').addEventListener('click',next); $('#speak').addEventListener('click',speak); $('#errorToggle').addEventListener('click',()=>$('#errorBook').classList.toggle('show')); $('#practiceErrors').addEventListener('click',practiceErrors); $('#restart').addEventListener('click',()=>{ answer.disabled=false; $('#check').disabled=false; $('#skip').disabled=false; resetRound(); }); answer.addEventListener('keydown',e=>{ if(e.key==='Enter') check(); });
 rebuildChapters(); renderErrorBook(); resetRound();
