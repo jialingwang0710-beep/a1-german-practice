@@ -255,18 +255,18 @@ function next() { if (index < round.length - 1) { index++; display(); } else { $
 function previous() { if (index > 0) { index--; display(); } }
 function practiceErrors() { const list = errorEntries(); if (!list.length) return; errorMode = true; round = shuffle(list); index = 0; correctIndices = new Set(); answer.disabled=false; $('#check').disabled=false; $('#skip').disabled=false; $('#errorBook').classList.remove('show'); display(); }
 let feedbackAudio;
-async function playFeedbackSound(isCorrect) {
+function playFeedbackSound(isCorrect) {
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtx) return;
   try {
     feedbackAudio ??= new AudioCtx();
-    if (feedbackAudio.state === 'suspended') await feedbackAudio.resume();
+    if (feedbackAudio.state === 'suspended') feedbackAudio.resume();
     const audio = feedbackAudio, oscillator = audio.createOscillator(), gain = audio.createGain(), now = audio.currentTime;
     oscillator.type = isCorrect ? 'sine' : 'triangle';
     oscillator.frequency.setValueAtTime(isCorrect ? 660 : 190, now);
-    oscillator.frequency.linearRampToValueAtTime(isCorrect ? 880 : 135, now + (isCorrect ? .12 : .2));
-    gain.gain.setValueAtTime(.0001, now); gain.gain.exponentialRampToValueAtTime(.36, now + .02); gain.gain.exponentialRampToValueAtTime(.0001, now + .26);
-    oscillator.connect(gain); gain.connect(audio.destination); oscillator.start(now); oscillator.stop(now + .28);
+    oscillator.frequency.linearRampToValueAtTime(isCorrect ? 880 : 135, now + (isCorrect ? .16 : .28));
+    gain.gain.setValueAtTime(.0001, now); gain.gain.exponentialRampToValueAtTime(.8, now + .02); gain.gain.exponentialRampToValueAtTime(.0001, now + .45);
+    oscillator.connect(gain); gain.connect(audio.destination); oscillator.start(now); oscillator.stop(now + .48);
   } catch { /* 音效不可用时不影响答题。 */ }
 }
 function check() { if (!round.length || checked) return; const x = round[index], given = normalize(answer.value), expected = answersFor(x).map(normalize); if (!given) { feedback.className='no'; feedback.textContent='请先输入答案。'; return; } checked = true; if (expected.includes(given)) { correctIndices.add(index); const key = errorKey(x), wasError = Boolean(errors[key]); if (wasError) { delete errors[key]; saveErrors(); renderErrorBook(); } playFeedbackSound(true); feedback.className='ok'; feedback.innerHTML=wasError ? '✓ 正确！已从错题本移除。' : '✓ 正确！'; setTimeout(next, 750); } else { const key = errorKey(x); errors[key] = {...x, wrong: answer.value.trim()}; saveErrors(); renderErrorBook(); playFeedbackSound(false); feedback.className='no'; feedback.innerHTML=`✗ 还不对，已加入错题本。标准答案：<strong>${answersFor(x).join(' / ')}</strong>`; $('#status').textContent = `第 ${index + 1} / ${round.length} 题 · 可查看答案后跳过`; } }
