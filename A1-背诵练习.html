@@ -262,7 +262,7 @@ function playFeedbackSound(isCorrect) {
     oscillator.type = isCorrect ? 'sine' : 'triangle';
     oscillator.frequency.setValueAtTime(isCorrect ? 660 : 190, now);
     oscillator.frequency.linearRampToValueAtTime(isCorrect ? 880 : 135, now + (isCorrect ? .12 : .2));
-    gain.gain.setValueAtTime(.0001, now); gain.gain.exponentialRampToValueAtTime(.12, now + .02); gain.gain.exponentialRampToValueAtTime(.0001, now + .26);
+    gain.gain.setValueAtTime(.0001, now); gain.gain.exponentialRampToValueAtTime(.36, now + .02); gain.gain.exponentialRampToValueAtTime(.0001, now + .26);
     oscillator.connect(gain); gain.connect(audio.destination); oscillator.start(now); oscillator.stop(now + .28); oscillator.onended = () => audio.close();
   } catch { /* 音效不可用时不影响答题。 */ }
 }
