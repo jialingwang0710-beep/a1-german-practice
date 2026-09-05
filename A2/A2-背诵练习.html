@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>A1 德语背诵练习</title>
+  <title>A2 德语背诵练习</title>
   <style>
     :root { --ink:#17202a; --muted:#64748b; --paper:#fffdf8; --green:#087f5b; --green-pale:#dcfce7; --red:#c92a2a; --red-pale:#fff1f2; --blue:#2f5d8c; --line:#dbe3ea; }
     * { box-sizing:border-box; }
@@ -43,7 +43,7 @@
 <body>
 <main>
   <header>
-    <div><h1>A1 德语背诵练习</h1><p class="subtitle">看中文，写德语；答错会立即显示标准答案。单词、短语和句子均可练习。</p></div>
+    <div><h1>A2 德语背诵练习</h1><p class="subtitle">看中文，写德语；答错会立即显示标准答案。单词、短语和句子均可练习。</p></div>
     <div class="count" id="totalCount"></div>
   </header>
   <section class="panel" aria-label="背诵练习">
@@ -64,10 +64,10 @@
   </section>
   <p class="notice">发音由浏览器的德语语音提供；第一次点击后若没有声音，请确认设备音量及浏览器语音权限。答案会忽略首尾空格、连续空格和部分标点差异。</p>
 </main>
-<script src="./a1-rebuild-items.js"></script>
-<script src="./a1-goethe-high-frequency-items.js"></script>
+<script src="./a2-rebuild-items.js"></script>
+<script src="./a2-goethe-high-frequency-items.js"></script>
 <script>
-// 来源：A1_Wortliste.pdf 与 Redemittel.pdf（2026-09-04 整理）。
+// 来源：A2_Wortliste.pdf 与 A2 Redemittel（2026-09-04 整理）。
 // 如需新增项目，在词条末尾按 {c:'K1', k:'word/phrase', de:'', zh:''} 添加即可。
 const items = [
   {c:'K1',k:'word',de:'der Name',zh:'名字'},{c:'K1',k:'word',de:'der Vorname',zh:'名'},{c:'K1',k:'word',de:'der Familienname',zh:'姓氏'},{c:'K1',k:'word',de:'das Alter',zh:'年龄'},{c:'K1',k:'word',de:'die Adresse',zh:'地址'},{c:'K1',k:'word',de:'die Sprache',zh:'语言'},{c:'K1',k:'word',de:'die Muttersprache',zh:'母语'},{c:'K1',k:'word',de:'der Beruf',zh:'职业'},{c:'K1',k:'word',de:'die Familie',zh:'家庭'},{c:'K1',k:'word',de:'das Kind',zh:'孩子'},
@@ -90,19 +90,19 @@ const items = [
   {c:'课堂',k:'phrase',de:'Wie sagt man … auf Deutsch?',zh:'……用德语怎么说？'},{c:'课堂',k:'phrase',de:'Ich verstehe das nicht.',zh:'我不明白这个。'},{c:'课堂',k:'phrase',de:'Wie bitte?',zh:'请再说一遍？'},{c:'课堂',k:'phrase',de:'Können Sie das noch einmal wiederholen?',zh:'您能再重复一遍吗？'},{c:'课堂',k:'phrase',de:'Sprechen Sie bitte langsamer.',zh:'请您说慢一点。'},{c:'课堂',k:'phrase',de:'Ich habe eine Frage.',zh:'我有一个问题。'},{c:'课堂',k:'phrase',de:'Was denken Sie?',zh:'您怎么看？'},{c:'课堂',k:'phrase',de:'Ich denke, …',zh:'我认为，……'},{c:'课堂',k:'phrase',de:'Ich weiß es nicht.',zh:'我不知道。'},{c:'课堂',k:'phrase',de:'Das stimmt.',zh:'这是对的。'},{c:'课堂',k:'phrase',de:'Das stimmt nicht.',zh:'这不对。'},{c:'课堂',k:'phrase',de:'Sie haben recht.',zh:'您是对的。'}
 ];
 // 题库以已审核的重建稿为准；保留上方旧数组仅为兼容历史版本，不参与本页练习。
-if (Array.isArray(window.A1_REBUILD_ITEMS)) {
-  items.splice(0, items.length, ...window.A1_REBUILD_ITEMS);
+if (Array.isArray(window.A2_REBUILD_ITEMS)) {
+  items.splice(0, items.length, ...window.A2_REBUILD_ITEMS);
 }
-if (Array.isArray(window.A1_GOETHE_HIGH_FREQUENCY_ITEMS)) {
-  items.push(...window.A1_GOETHE_HIGH_FREQUENCY_ITEMS);
+if (Array.isArray(window.A2_GOETHE_HIGH_FREQUENCY_ITEMS)) {
+  items.push(...window.A2_GOETHE_HIGH_FREQUENCY_ITEMS);
 }
-if (Array.isArray(window.A1_WORTLISTE_ITEMS)) {
+if (Array.isArray(window.A2_WORTLISTE_ITEMS)) {
   const knownGerman = new Set(items.map(item => item.de));
-  items.push(...window.A1_WORTLISTE_ITEMS.filter(item => !knownGerman.has(item.de)));
+  items.push(...window.A2_WORTLISTE_ITEMS.filter(item => !knownGerman.has(item.de)));
 }
-if (Array.isArray(window.A1_REDEMITTEL_ITEMS)) {
+if (Array.isArray(window.A2_REDEMITTEL_ITEMS)) {
   const knownGerman = new Set(items.map(item => item.de));
-  items.push(...window.A1_REDEMITTEL_ITEMS.filter(item => !knownGerman.has(item.de)));
+  items.push(...window.A2_REDEMITTEL_ITEMS.filter(item => !knownGerman.has(item.de)));
 }
 const splitEntries = {
   'Berlin · Wien · – Zürich': [['Berlin','柏林'],['Wien','维也纳'],['Zürich','苏黎世']],
@@ -211,6 +211,8 @@ const alternativeAnswers = {
   'zahlen / ich zahle / bezahle bezahlen': ['zahlen','ich zahle','ich bezahle','bezahlen']
 };
 const separableVerbs = ['aufstehen','aufwachen','anfangen','anrufen','einkaufen','fernsehen','einschlafen','aufräumen','ausgehen','abholen','umsteigen','ankommen','abfahren','mitnehmen','einpacken','umziehen','einrichten'];
+// A2 使用已审核的完整题库，不再执行旧版的自动拆分，避免把完整短语误改成单个动词。
+if (!Array.isArray(window.A2_REBUILD_ITEMS)) {
 const rewrittenItems = [];
 for (const item of items) {
   if (splitEntries[item.de]) { rewrittenItems.push(...splitEntries[item.de].map(([de,zh]) => ({...item,de,zh,k:'word'}))); continue; }
@@ -228,10 +230,11 @@ for (const item of rewrittenItems) {
 }
 if (consolidatedItems.has('wohnen')) consolidatedItems.set('wohnen',{...consolidatedItems.get('wohnen'),zh:'住'});
 items.splice(0,items.length,...consolidatedItems.values());
+}
 
 const $ = s => document.querySelector(s);
 const chapter = $('#chapter'), kind = $('#kind'), answer = $('#answer'), feedback = $('#feedback');
-const ERROR_STORAGE_KEY = 'a1-vocabulary-error-book-v1';
+const ERROR_STORAGE_KEY = 'a2-vocabulary-error-book-v1';
 const loadErrors = () => { try { return JSON.parse(localStorage.getItem(ERROR_STORAGE_KEY)) || {}; } catch { return {}; } };
 let errors = loadErrors(), round = [], index = 0, correctIndices = new Set(), checked = false, errorMode = false;
 const normalize = text => text.toLocaleLowerCase('de-DE').replace(/…|\.\.\./g,' ').replace(/[„“”"'.,!?؛;:()[\]{}–—-]/g,' ').replace(/\s+/g,' ').trim();
@@ -284,3 +287,5 @@ rebuildChapters(); renderErrorBook(); resetRound();
 </script>
 </body>
 </html>
+
+
