@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <title>A1 德语背诵练习</title>
   <style>
     :root {
@@ -11,9 +11,9 @@
       --red:#a9433f; --red-pale:#fbebe8; --blue:#285e50; --line:#d9e2d9; --gold:#c49a58;
     }
     * { box-sizing:border-box; }
-    html, body { width:100%; height:100%; margin:0; }
+    html, body { width:100%; height:100%; margin:0; overscroll-behavior:none; }
     body {
-      height:100vh; height:100dvh; overflow:hidden; color:var(--ink);
+      position:fixed; top:0; left:0; width:100%; height:100vh; height:100dvh; height:var(--visible-app-height,100vh); overflow:hidden; color:var(--ink);
       background:radial-gradient(ellipse at 12% 8%,#e5eee5 0,transparent 34%),radial-gradient(ellipse at 92% 92%,#f3e7d1 0,transparent 36%),#f4f2e9;
       font-family:"Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
     }
@@ -39,6 +39,7 @@
       width:100%; min-width:0; border:1px solid var(--line); border-radius:12px; padding:12px 13px; margin-top:7px;
       background:#fffefa; color:var(--ink); font:inherit; box-shadow:0 2px 5px #31493b08;
     }
+    .answer-label input { font-size:16px; }
     select:focus, input:focus { outline:3px solid #d4e4d5; border-color:#6b9a7f; }
     .round-progress { margin-top:clamp(24px,5vh,58px); }
     .progress-caption { margin-bottom:9px; color:#65776c; font-size:.77rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
@@ -133,6 +134,23 @@
       .actions button { min-height:37px; }
       #feedback { height:34px; min-height:34px; max-height:34px; padding:6px 9px; }
     }
+    body.keyboard-open main { padding:4px 8px; gap:4px; }
+    body.keyboard-open .eyebrow, body.keyboard-open .subtitle { display:none; }
+    body.keyboard-open h1 { font-size:1rem; }
+    body.keyboard-open .count { padding:4px 7px; font-size:.7rem; }
+    body.keyboard-open .panel { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); gap:0; padding:8px; }
+    body.keyboard-open .rail { display:none; }
+    body.keyboard-open .study { grid-template-rows:minmax(0,1fr) auto; gap:4px; }
+    body.keyboard-open .question { padding:0; }
+    body.keyboard-open .prompt-label { margin:4px 0; font-size:.75rem; }
+    body.keyboard-open #meaning { font-size:clamp(1.15rem,4vw,1.7rem); text-align:center; }
+    body.keyboard-open .hint { display:none; }
+    body.keyboard-open .answer-label { display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:8px; }
+    body.keyboard-open .answer-label input { margin:0; padding:7px 9px; font-size:16px; }
+    body.keyboard-open .actions { gap:4px; margin-top:4px; }
+    body.keyboard-open .actions button { min-height:34px; padding:5px 3px; font-size:.68rem; }
+    body.keyboard-open #feedback { height:32px; min-height:32px; max-height:32px; margin-top:4px; padding:5px 8px; }
+    body.keyboard-open #errorBook { inset:4px; padding:10px; }
   </style>
 </head>
 <body>
@@ -159,7 +177,7 @@
         <div class="hint" id="hint"></div>
       </div>
       <div class="answer-controls">
-        <label class="answer-label" for="answer">你的答案<input id="answer" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="在这里输入德语，然后提交"></label>
+        <label class="answer-label" for="answer">你的答案<input id="answer" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send" placeholder="在这里输入德语，然后提交"></label>
         <div class="actions"><button class="primary" id="check">提交答案</button><button id="speak" title="朗读标准答案">🔊 听发音</button><button id="previous" disabled>上一题</button><button id="skip">下一题</button><button id="errorToggle">错题本（0）</button></div>
         <div id="feedback" role="status" aria-live="polite"></div>
       </div>
@@ -335,6 +353,23 @@ items.splice(0,items.length,...consolidatedItems.values());
 
 const $ = s => document.querySelector(s);
 const chapter = $('#chapter'), kind = $('#kind'), answer = $('#answer'), feedback = $('#feedback');
+let baseViewportHeight = Math.max(window.innerHeight, window.visualViewport?.height || 0);
+function syncAppViewport() {
+  const visibleHeight = window.visualViewport?.height || window.innerHeight;
+  document.documentElement.style.setProperty('--visible-app-height', `${Math.round(visibleHeight)}px`);
+  const keyboardOpen = answer === document.activeElement && visibleHeight < baseViewportHeight - 120;
+  document.body.classList.toggle('keyboard-open', keyboardOpen);
+}
+function refreshBaseViewport() {
+  if (document.activeElement !== answer) baseViewportHeight = Math.max(window.innerHeight, window.visualViewport?.height || 0);
+  syncAppViewport();
+}
+window.visualViewport?.addEventListener('resize', syncAppViewport);
+window.visualViewport?.addEventListener('scroll', syncAppViewport);
+window.addEventListener('resize', refreshBaseViewport);
+answer.addEventListener('focus', syncAppViewport);
+answer.addEventListener('blur', () => setTimeout(syncAppViewport, 250));
+syncAppViewport();
 const ERROR_STORAGE_KEY = 'a1-vocabulary-error-book-v1';
 const loadErrors = () => { try { return JSON.parse(localStorage.getItem(ERROR_STORAGE_KEY)) || {}; } catch { return {}; } };
 let errors = loadErrors(), round = [], index = 0, correctIndices = new Set(), checked = false, errorMode = false;
@@ -357,7 +392,8 @@ function display() {
   $('#meaning').textContent = x.zh; $('#tag').textContent = `${x.c} · ${x.k === 'word' ? '单词' : '短语与句子'}`;
   $('#hint').textContent = x.de.includes('…') ? '提示：省略号（…）表示可替换的内容；请照标准句型输入。' : '';
   $('#status').textContent = `第 ${index + 1} / ${round.length} 题 · 答对 ${correctIndices.size} 题`;
-  $('#bar').style.width = `${(index / round.length) * 100}%`; $('#previous').disabled = index === 0; answer.focus();
+  $('#bar').style.width = `${(index / round.length) * 100}%`; $('#previous').disabled = index === 0;
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) answer.focus({preventScroll:true});
 }
 function resetRound() { errorMode = false; round = shuffle(choices()); index = 0; correctIndices = new Set(); $('#errorBook').classList.remove('show'); display(); }
 let pronunciationAudio = null;
